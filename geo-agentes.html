@@ -1,0 +1,84 @@
+
+<dom-module id="geo-agentes">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+    </style>
+    <h2>Hello [[prop1]]!</h2>
+    <div id="map"></div>
+  </template>
+
+  <script src="https://www.gstatic.com/firebasejs/4.5.0/firebase.js"></script>
+  <script async defer
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAM96xXcx0Soj1eyY_OKBe9UL6AGmCVoLE">
+  </script>
+  <script>
+    // Initialize Firebase
+    var config = {
+      apiKey: "AIzaSyCLiF5jEktPQU-68n_2nAh4Gc4tzu8AQ5M",
+      authDomain: "devbbvapi1.firebaseapp.com",
+      databaseURL: "https://devbbvapi1.firebaseio.com",
+      projectId: "devbbvapi1",
+      storageBucket: "devbbvapi1.appspot.com",
+      messagingSenderId: "377803341431"
+    };
+    firebase.initializeApp(config);
+  </script>
+  <script>
+    /**
+     * `geo-agentes`
+     * prueba de nuevo polymer
+     *
+     * @customElement
+     * @polymer
+     * @demo demo/index.html
+     */
+    class GeoAgentes extends Polymer.Element {
+      static get is() { return 'geo-agentes'; }
+      static get properties() {
+        return {
+          prop1: {
+            type: String,
+            value: 'Agentes BBVA'
+          }
+        };
+      }
+      ready(){
+        super.ready();
+        this._getPoints();
+      }
+      _getPoints(){
+        var self = this;
+        firebase.database().ref('/agentes/').once('value').then(function(snapshot) {
+          self.agents = [];
+          snapshot.forEach(function(child) {
+            var agent = child.val();
+            agent.id=child.key;
+            //console.info(agent);
+            var myLatLng = {lat: agent.latitud, lng: agent.longitud};
+            var map = new google.maps.Map(self.$.map, {
+              zoom: 1,
+              center: myLatLng
+            });
+      
+            var marker = new google.maps.Marker({
+              position: myLatLng,
+              map: map,
+              title: 'AGENTES BBVA'
+            });
+            self.push('agents', agent);
+          });
+        });
+      }
+    }
+
+    window.customElements.define(GeoAgentes.is, GeoAgentes);
+  </script>
+</dom-module>
